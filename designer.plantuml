@@ -1,0 +1,65 @@
+@startuml
+actor Designer
+boundary "WebUI"
+entity "Authentication API"
+entity "Designer API"
+entity "Stripe API"
+database "Firebase"
+
+
+Designer -> WebUI: Login
+WebUI -> "Authentication API"
+"Authentication API" -> Firebase: Lookup username and password hash
+Firebase --> "Authentication API": User
+"Authentication API" --> WebUI: UserToken
+WebUI -> WebUI: Redirect to dashboard
+WebUI -> "Designer API": Get dashboard items
+"Designer API" -> Firebase: Get Trim and Fabrics
+Firebase --> "Designer API": Trims and Fabrics
+"Designer API" --> WebUI: Trim and Fabrics
+WebUI -> WebUI: Display dashboard
+Designer -> WebUI: Click "Create new style"
+Designer -> WebUI: Submit out "Create new style" form
+WebUI -> "Designer API": Create new style
+"Designer API" -> Firebase: Insert Style
+note right
+UserToken
+Style{
+	ID
+	DesignerID
+	Name
+	TrimID
+	FabricID
+}
+end note
+Firebase --> "Designer API": Success
+"Designer API" --> WebUI: Success
+WebUI -> WebUI: Redirect to dashboard with new style
+Designer -> WebUI: Add style to cart
+WebUI -> "Designer API": Add to cart
+"Designer API" -> Firebase: Add to cart
+Firebase --> "Designer API": Success
+"Designer API" --> WebUI: Success
+Designer -> WebUI: Click "Checkout"
+WebUI -> "Designer API": Checkout
+"Designer API" -> Firebase: Get billing information
+Firebase --> "Designer API": {BillingInfo}
+"Designer API" -> Firebase: Get shipping information
+Firebase --> "Designer API": {ShippingInfo}
+"Designer API" -> Firebase: Get cart items
+Firebase --> "Designer API": {CartItems}
+WebUI --> "Designer API": Display billing and shipping information
+Designer -> WebUI: Add stripe credit card information
+WebUI -> "Stripe API": Submit payment information
+"Stripe API" --> "Stripe API": Create customer
+"Stripe API" --> WebUI: {TransactionID, CustomerID}
+WebUI -> "Designer API": Submit order
+"Designer API" -> Firebase: Add order to manufacturer queue
+Firebase --> "Designer API": Success
+"Designer API" -> WebUI: Success
+Designer -> WebUI: Click Logout
+WebUI -> "Authentication API": Logout
+"Authentication API" -> Firebase: Expire Session
+Firebase --> "Authentication API": Success
+"Authentication API" --> WebUI: Success
+@enduml

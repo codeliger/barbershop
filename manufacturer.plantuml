@@ -1,0 +1,54 @@
+@startuml
+actor Manufacturer
+boundary "WebUI"
+entity "Authentication API"
+entity "Manufacturer API"
+database "Firebase"
+
+Manufacturer -> WebUI: Login
+WebUI -> "Authentication API"
+"Authentication API" -> Firebase: Lookup username and password hash
+Firebase --> "Authentication API": User
+"Authentication API" --> WebUI: UserToken
+WebUI -> WebUI: Redirect to dashboard
+Manufacturer -> WebUI: Click "Add new Trim Type"
+WebUI -> WebUI: Display "Add Trim Type" form
+Manufacturer -> WebUI: Submit out "Add Trim Type" form
+WebUI -> "Manufacturer API": Add Trim Type
+"Manufacturer API" -> Firebase: Insert Trim
+note right
+UserToken
+Trim{
+	ID
+	MaterialType
+	ManufacturerID
+	Name
+	ImageURL
+	Price
+	Quantity
+}
+end note
+Firebase --> "Manufacturer API": Trim
+"Manufacturer API" --> WebUI: Trim
+WebUI -> WebUI: Redirect to new trim type
+WebUI -> "Manufacturer API": Add Fabric Type
+"Manufacturer API" -> Firebase: Insert Fabric
+note right
+UserToken
+Fabric{
+	ID
+	MaterialType
+	ManufacturerID
+	Name
+	ImageURL
+	Price
+	Quantity
+}
+end note
+WebUI -> WebUI: Redirect to new fabric type
+Manufacturer -> WebUI: Click Logout
+WebUI -> "Authentication API": Logout
+"Authentication API" -> Firebase: Expire Session
+Firebase --> "Authentication API": Success
+"Authentication API" --> WebUI: Success
+@enduml
